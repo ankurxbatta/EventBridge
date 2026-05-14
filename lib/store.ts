@@ -7,6 +7,22 @@ import { PostedEvent, ProviderProfile, Quote } from "@/types";
 
 const EVENTS_KEY = "eventops_events";
 const PROVIDERS_KEY = "eventops_providers";
+const ORGANIZER_SESSION_KEY = "eventops_organizer_session";
+const PROVIDER_SESSION_KEY = "eventops_provider_session";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface OrganizerSession {
+  name: string;
+  contact: string; // email — used as identity key
+}
+
+export interface ProviderSession {
+  name: string;
+  contact: string; // email — used as identity key
+  profileId: string;
+  category: string;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -24,15 +40,59 @@ function write<T>(key: string, data: T[]): void {
   localStorage.setItem(key, JSON.stringify(data));
 }
 
+function readOne<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeOne<T>(key: string, data: T): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
 function uid(): string {
   return Math.random().toString(36).slice(2, 10);
+}
+
+// ─── Session: Organizer ───────────────────────────────────────────────────────
+
+export function getOrganizerSession(): OrganizerSession | null {
+  return readOne<OrganizerSession>(ORGANIZER_SESSION_KEY);
+}
+
+export function setOrganizerSession(session: OrganizerSession): void {
+  writeOne(ORGANIZER_SESSION_KEY, session);
+}
+
+export function clearOrganizerSession(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(ORGANIZER_SESSION_KEY);
+}
+
+// ─── Session: Provider ────────────────────────────────────────────────────────
+
+export function getProviderSession(): ProviderSession | null {
+  return readOne<ProviderSession>(PROVIDER_SESSION_KEY);
+}
+
+export function setProviderSession(session: ProviderSession): void {
+  writeOne(PROVIDER_SESSION_KEY, session);
+}
+
+export function clearProviderSession(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(PROVIDER_SESSION_KEY);
 }
 
 // ─── Events ───────────────────────────────────────────────────────────────────
 
 export function getEvents(): PostedEvent[] {
   const stored = read<PostedEvent>(EVENTS_KEY);
-  // Seed with demo data if empty
   if (stored.length === 0) {
     const seeded = seedEvents();
     write(EVENTS_KEY, seeded);
@@ -45,7 +105,16 @@ export function getEvent(id: string): PostedEvent | null {
   return getEvents().find((e) => e.id === id) ?? null;
 }
 
-export function saveEvent(event: Omit<PostedEvent, "id" | "createdAt" | "quotes">): PostedEvent {
+/** Returns events owned by the current organizer session */
+export function getMyEvents(): PostedEvent[] {
+  const session = getOrganizerSession();
+  if (!session) return [];
+  return getEvents().filter((e) => e.organizerContact === session.contact);
+}
+
+export function saveEvent(
+  event: Omit<PostedEvent, "id" | "createdAt" | "quotes">
+): PostedEvent {
   const events = getEvents();
   const newEvent: PostedEvent = {
     ...event,
@@ -57,7 +126,10 @@ export function saveEvent(event: Omit<PostedEvent, "id" | "createdAt" | "quotes"
   return newEvent;
 }
 
-export function addQuote(eventId: string, quote: Omit<Quote, "id" | "createdAt" | "status" | "eventId">): Quote {
+export function addQuote(
+  eventId: string,
+  quote: Omit<Quote, "id" | "createdAt" | "status" | "eventId">
+): Quote {
   const events = getEvents();
   const idx = events.findIndex((e) => e.id === eventId);
   if (idx === -1) throw new Error("Event not found");
@@ -76,13 +148,35 @@ export function addQuote(eventId: string, quote: Omit<Quote, "id" | "createdAt" 
   return newQuote;
 }
 
-export function updateQuoteStatus(eventId: string, quoteId: string, status: Quote["status"]): void {
+export function updateQuoteStatus(
+  eventId: string,
+  quoteId: string,
+  status: Quote["status"]
+): void {
   const events = getEvents();
   const ev = events.find((e) => e.id === eventId);
   if (!ev) return;
   const q = ev.quotes.find((q) => q.id === quoteId);
   if (q) q.status = status;
   write(EVENTS_KEY, events);
+}
+
+/** Returns all quotes submitted by the current provider session (across all events) */
+export function getMyQuotes(): Array<{ quote: Quote; event: PostedEvent }> {
+  const session = getProviderSession();
+  if (!session) return [];
+  const events = getEvents();
+  const results: Array<{ quote: Quote; event: PostedEvent }> = [];
+  for (const event of events) {
+    for (const quote of event.quotes) {
+      if (quote.providerName === session.name && quote.providerCategory === session.category) {
+        results.push({ quote, event });
+      }
+    }
+  }
+  return results.sort(
+    (a, b) => new Date(b.quote.createdAt).getTime() - new Date(a.quote.createdAt).getTime()
+  );
 }
 
 // ─── Providers ────────────────────────────────────────────────────────────────
@@ -101,14 +195,20 @@ export function getProvider(id: string): ProviderProfile | null {
   return getProviders().find((p) => p.id === id) ?? null;
 }
 
-export function saveProvider(profile: Omit<ProviderProfile, "id" | "createdAt" | "eventsCompleted" | "rating" | "verified">): ProviderProfile {
+export function saveProvider(
+  profile: Omit<
+    ProviderProfile,
+    "id" | "createdAt" | "eventsCompleted" | "rating" | "verified"
+  >
+): ProviderProfile {
   const providers = getProviders();
   const existing = providers.findIndex((p) => p.contact === profile.contact);
 
   const newProfile: ProviderProfile = {
     ...profile,
     id: existing >= 0 ? providers[existing].id : uid(),
-    createdAt: existing >= 0 ? providers[existing].createdAt : new Date().toISOString(),
+    createdAt:
+      existing >= 0 ? providers[existing].createdAt : new Date().toISOString(),
     eventsCompleted: existing >= 0 ? providers[existing].eventsCompleted : 0,
     rating: existing >= 0 ? providers[existing].rating : 0,
     verified: false,
@@ -141,9 +241,14 @@ function seedEvents(): PostedEvent[] {
         duration: "1 night",
         estimatedBudget: "$8,000",
         vibe: "Immersive, psychedelic, safe, artistic, community-focused",
-        summary: "A one-night underground music and art event designed around immersive sound, lighting, visual projections, and a safe community environment.",
+        summary:
+          "A one-night underground music and art event designed around immersive sound, lighting, visual projections, and a safe community environment.",
         requiredServices: ["Venue", "Sound", "Lighting", "Visuals", "Security"],
-        risks: ["Sound permits required for late-night music.", "Crowd safety planning needed for 150 attendees.", "Power access must be confirmed before booking sound and visuals."],
+        risks: [
+          "Sound permits required for late-night music.",
+          "Crowd safety planning needed for 150 attendees.",
+          "Power access must be confirmed before booking sound and visuals.",
+        ],
       },
       selectedServices: ["Sound", "Lighting", "Visuals", "Security"],
       budgetAllocation: { Sound: 2200, Lighting: 1600, Visuals: 1200, Security: 1000 },
@@ -158,7 +263,8 @@ function seedEvents(): PostedEvent[] {
           providerCategory: "Sound",
           providerLocation: "Vancouver, BC",
           price: "$1,800",
-          message: "Hi Maya, we'd love to be part of Neon Forest Gathering. We've done 20+ underground events in Vancouver and have a full bass-heavy rig perfect for 150 people.",
+          message:
+            "Hi Maya, we'd love to be part of Neon Forest Gathering. We've done 20+ underground events in Vancouver and have a full bass-heavy rig perfect for 150 people.",
           availability: "Available",
           experience: "8 years, 200+ events",
           portfolioLinks: [],
@@ -179,9 +285,14 @@ function seedEvents(): PostedEvent[] {
         duration: "1 day",
         estimatedBudget: "$15,000",
         vibe: "Vibrant, inclusive, family-friendly, outdoor, local artists",
-        summary: "A daytime outdoor community festival celebrating local artists, food vendors, and live music in a park setting.",
+        summary:
+          "A daytime outdoor community festival celebrating local artists, food vendors, and live music in a park setting.",
         requiredServices: ["Venue", "Sound", "Food", "Marketing", "Security", "Artists / Performers"],
-        risks: ["Weather backup plan essential.", "Permit for outdoor amplified music required.", "Insurance and liability coverage needed."],
+        risks: [
+          "Weather backup plan essential.",
+          "Permit for outdoor amplified music required.",
+          "Insurance and liability coverage needed.",
+        ],
       },
       selectedServices: ["Sound", "Food", "Marketing", "Security", "Artists / Performers"],
       budgetAllocation: { Sound: 3000, Food: 2000, Marketing: 1500, Security: 2000, "Artists / Performers": 4000 },
@@ -201,9 +312,13 @@ function seedEvents(): PostedEvent[] {
         duration: "1 day",
         estimatedBudget: "$12,000",
         vibe: "Professional, engaging, innovative, networking-focused",
-        summary: "A one-day internal tech conference with keynote speakers, breakout sessions, and networking dinner.",
+        summary:
+          "A one-day internal tech conference with keynote speakers, breakout sessions, and networking dinner.",
         requiredServices: ["Venue", "Sound", "Lighting", "Food", "Marketing"],
-        risks: ["AV setup must be tested morning of event.", "Dietary restrictions need advance collection."],
+        risks: [
+          "AV setup must be tested morning of event.",
+          "Dietary restrictions need advance collection.",
+        ],
       },
       selectedServices: ["Venue", "Sound", "Food"],
       budgetAllocation: { Venue: 5000, Sound: 2500, Food: 3000 },
@@ -218,7 +333,8 @@ function seedEvents(): PostedEvent[] {
           providerCategory: "Venue",
           providerLocation: "Vancouver, BC",
           price: "$4,800",
-          message: "We have a perfect downtown space for your summit — full AV included, capacity 100, breakout rooms available.",
+          message:
+            "We have a perfect downtown space for your summit — full AV included, capacity 100, breakout rooms available.",
           availability: "Available",
           experience: "5 years corporate events",
           portfolioLinks: [],
