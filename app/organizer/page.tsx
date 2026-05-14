@@ -68,6 +68,7 @@ export default function OrganizerPage() {
         body: JSON.stringify({ type: "blueprint", eventIdea: idea }),
       });
       const bpData = await bpRes.json();
+      if (!bpRes.ok) throw new Error(bpData?.error || "Blueprint request failed");
       const bp: EventBlueprint = bpData.blueprint;
       setBlueprint(bp);
 
@@ -78,7 +79,8 @@ export default function OrganizerPage() {
         body: JSON.stringify({ type: "checklist", blueprint: bp }),
       });
       const clData = await clRes.json();
-      const items: ChecklistItem[] = clData.checklist ?? [];
+      if (!clRes.ok) throw new Error(clData?.error || "Checklist request failed");
+      const items: ChecklistItem[] = Array.isArray(clData.checklist) ? clData.checklist : [];
       setChecklist(items);
 
       // Pre-select must-haves

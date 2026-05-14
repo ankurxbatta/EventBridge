@@ -25,18 +25,20 @@ requiredServices MUST only use: Venue, Sound, Lighting, Visuals, Food, Security,
 risks must be specific to event type, scale, and location.`;
 
 const CHECKLIST_PROMPT = `You are EventOps AI. Given an event brief, generate a service checklist.
-Return ONLY a valid JSON array — no text outside it.
+Return ONLY a valid JSON object with a "checklist" array — no text outside it.
 
-[
-  {
-    "id": "unique-slug",
-    "service": "Service name (from allowed list)",
-    "icon": "single emoji",
-    "priority": "must-have" | "important" | "optional",
-    "reason": "One sentence why this service matters for this specific event",
-    "estimatedCost": "e.g. $1,200 – $2,500"
-  }
-]
+{
+  "checklist": [
+    {
+      "id": "unique-slug",
+      "service": "Service name (from allowed list)",
+      "icon": "single emoji",
+      "priority": "must-have" | "important" | "optional",
+      "reason": "One sentence why this service matters for this specific event",
+      "estimatedCost": "e.g. $1,200 – $2,500"
+    }
+  ]
+}
 
 Allowed services: Venue, Sound, Lighting, Visuals, Food, Security, Marketing, Artists / Performers
 Order by priority: must-have first. Be specific to the event type and scale.`;
@@ -99,10 +101,15 @@ export async function POST(req: NextRequest) {
         response_format: { type: "json_object" },
       });
 
-      // GPT returns JSON object wrapping an array — handle both
       const raw = completion.choices[0]?.message?.content ?? "{}";
       const parsed = JSON.parse(raw);
-      const checklist = Array.isArray(parsed) ? parsed : (parsed.checklist ?? parsed.items ?? Object.values(parsed)[0] ?? []);
+      const checklist = Array.isArray(parsed.checklist)
+        ? parsed.checklist
+        : Array.isArray(parsed.items)
+          ? parsed.items
+          : Array.isArray(parsed)
+            ? parsed
+            : [];
       return NextResponse.json({ checklist });
     }
 
