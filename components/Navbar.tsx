@@ -1,8 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  clearOrganizerSession,
+  clearProviderSession,
+  saveProvider,
+  setOrganizerSession,
+  setProviderSession,
+} from "@/lib/store";
 
 const NAV_LINKS = [
   { href: "/events", label: "Browse Events" },
@@ -13,6 +20,44 @@ const NAV_LINKS = [
 export default function Navbar() {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const router = useRouter();
+
+  const handleDemoOrganizer = () => {
+    setOrganizerSession({ name: "Ankur", contact: "ankur@demo.local" });
+    setDemoOpen(false);
+    router.push("/organizer");
+  };
+
+  const handleDemoProvider = () => {
+    const profile = saveProvider({
+      name: "Ishmam",
+      category: "Sound",
+      location: "Vancouver, BC",
+      priceRange: "$900 - $2,200",
+      bio: "Live sound for underground and community events.",
+      experience: "6 years, 120+ events",
+      tags: ["Underground", "Live", "Warehouse"],
+      portfolioLinks: ["instagram.com/ishmam-sound"],
+      contact: "ishmam@demo.local",
+    });
+
+    setProviderSession({
+      name: profile.name,
+      contact: profile.contact,
+      profileId: profile.id,
+      category: profile.category,
+    });
+    setDemoOpen(false);
+    router.push("/provider");
+  };
+
+  const handleDemoClear = () => {
+    clearOrganizerSession();
+    clearProviderSession();
+    setDemoOpen(false);
+    router.push("/");
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-surface-border">
@@ -45,7 +90,38 @@ export default function Navbar() {
         </div>
 
         {/* Desktop CTAs */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2 relative">
+          <div className="relative">
+            <button
+              onClick={() => setDemoOpen((p) => !p)}
+              className="btn btn-ghost btn-sm"
+            >
+              Demo
+            </button>
+            {demoOpen && (
+              <div className="absolute right-0 mt-2 w-56 rounded-lg border border-surface-border bg-white shadow-lg p-2 z-50">
+                <button
+                  onClick={handleDemoOrganizer}
+                  className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-surface-sunken"
+                >
+                  Login as Ankur (organizer)
+                </button>
+                <button
+                  onClick={handleDemoProvider}
+                  className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-surface-sunken"
+                >
+                  Login as Ishmam (provider)
+                </button>
+                <div className="h-px bg-surface-border my-1" />
+                <button
+                  onClick={handleDemoClear}
+                  className="w-full text-left px-3 py-2 text-sm rounded-md text-ink-muted hover:bg-surface-sunken"
+                >
+                  Clear demo sessions
+                </button>
+              </div>
+            )}
+          </div>
           <Link href="/provider" className="btn btn-secondary btn-sm">
             List my services
           </Link>
@@ -88,6 +164,24 @@ export default function Navbar() {
             </Link>
           ))}
           <div className="pt-2 flex flex-col gap-2">
+            <button
+              onClick={() => { handleDemoOrganizer(); setOpen(false); }}
+              className="btn btn-ghost btn-sm w-full justify-center"
+            >
+              Demo: Ankur (organizer)
+            </button>
+            <button
+              onClick={() => { handleDemoProvider(); setOpen(false); }}
+              className="btn btn-ghost btn-sm w-full justify-center"
+            >
+              Demo: Ishmam (provider)
+            </button>
+            <button
+              onClick={() => { handleDemoClear(); setOpen(false); }}
+              className="btn btn-ghost btn-sm w-full justify-center"
+            >
+              Clear demo sessions
+            </button>
             <Link href="/provider" onClick={() => setOpen(false)} className="btn btn-secondary btn-sm w-full justify-center">List my services</Link>
             <Link href="/organizer" onClick={() => setOpen(false)} className="btn btn-primary btn-sm w-full justify-center">Plan an event</Link>
           </div>
