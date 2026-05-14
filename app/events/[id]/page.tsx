@@ -66,9 +66,7 @@ export default function EventDetailPage() {
     const orgSession = getOrganizerSession();
     const provSession = getProviderSession();
 
-    if (orgSession && orgSession.contact === ev.organizerContact) {
-      setIsOrganizer(true);
-    } else if (provSession) {
+    if (provSession) {
       setIsProvider(true);
       // Pre-fill quote form from session
       setForm((f) => ({
@@ -84,6 +82,10 @@ export default function EventDetailPage() {
         setMyQuote(existing);
         setHasAlreadyQuoted(true);
       }
+    }
+
+    if (orgSession && orgSession.contact === ev.organizerContact) {
+      setIsOrganizer(true);
     }
 
     setChatMessages([{
@@ -269,7 +271,7 @@ export default function EventDetailPage() {
           </div>
 
           {/* CTA — only show if not organizer and not already quoted */}
-          {!isOrganizer && !hasAlreadyQuoted && event.status !== "closed" && (
+          {(event.status !== "closed" && !hasAlreadyQuoted && (isProvider || !isOrganizer)) && (
             <button onClick={() => setShowQuoteForm(true)} className="btn btn-primary flex-shrink-0">
               Submit a quote
             </button>
