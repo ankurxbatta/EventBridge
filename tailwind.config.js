@@ -11,35 +11,42 @@ module.exports = {
         sans: ["Inter", "system-ui", "sans-serif"],
       },
       colors: {
-        brand: {
-          violet: "#8B5CF6",
+        ink: {
+          DEFAULT: "#0F0F0F",
+          soft: "#1A1A1A",
+          muted: "#6B7280",
+          faint: "#9CA3AF",
+        },
+        surface: {
+          DEFAULT: "#FAFAFA",
+          raised: "#FFFFFF",
+          sunken: "#F3F4F6",
+          border: "#E5E7EB",
+          hover: "#F9FAFB",
+        },
+        accent: {
+          DEFAULT: "#0F0F0F",
+          green: "#16A34A",
+          amber: "#D97706",
+          red: "#DC2626",
+          blue: "#2563EB",
           purple: "#7C3AED",
-          cyan: "#06B6D4",
-          pink: "#EC4899",
-          dark: "#0D0D1A",
-          card: "#13132A",
-          border: "#1E1E3F",
         },
       },
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "hero-gradient":
-          "linear-gradient(135deg, #0D0D1A 0%, #120D2E 50%, #0D1A2E 100%)",
+      boxShadow: {
+        card: "0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.06)",
+        "card-hover": "0 4px 12px 0 rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.06)",
+        modal: "0 20px 60px -10px rgba(0,0,0,0.15)",
       },
       animation: {
-        "fade-in": "fadeIn 0.5s ease-in-out",
-        "slide-up": "slideUp 0.4s ease-out",
-        pulse2: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "fade-in": "fadeIn 0.3s ease-out",
+        "slide-up": "slideUp 0.35s ease-out",
+        "scale-in": "scaleIn 0.2s ease-out",
       },
       keyframes: {
-        fadeIn: {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
-        },
-        slideUp: {
-          "0%": { opacity: "0", transform: "translateY(20px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
+        fadeIn: { from: { opacity: "0" }, to: { opacity: "1" } },
+        slideUp: { from: { opacity: "0", transform: "translateY(16px)" }, to: { opacity: "1", transform: "translateY(0)" } },
+        scaleIn: { from: { opacity: "0", transform: "scale(0.96)" }, to: { opacity: "1", transform: "scale(1)" } },
       },
     },
   },
