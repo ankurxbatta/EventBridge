@@ -1,149 +1,178 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import HeroSection from "@/components/HeroSection";
-import EventInputForm from "@/components/EventInputForm";
-import BlueprintCard from "@/components/BlueprintCard";
-import CategoryCard from "@/components/CategoryCard";
-import RiskNotes from "@/components/RiskNotes";
-import VendorCard from "@/components/VendorCard";
-import { EventBlueprint } from "@/types";
-import { mockVendors } from "@/data/mockVendors";
-import { serviceCategories } from "@/data/serviceCategories";
+import Link from "next/link";
+import Navbar from "@/components/Navbar";
 
-export default function Home() {
-  const [blueprint, setBlueprint] = useState<EventBlueprint | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const HOW_IT_WORKS_ORGANIZER = [
+  { step: "01", title: "Describe your event", body: "Write a few sentences about your event idea — vibe, size, budget, location." },
+  { step: "02", title: "AI builds your checklist", body: "Get a smart checklist of exactly what services you need, prioritised by importance." },
+  { step: "03", title: "Post and receive quotes", body: "Publish your event brief. Qualified providers send you quotes directly." },
+  { step: "04", title: "Co-create with confidence", body: "Review providers, track outreach, allocate budget, and export your brief." },
+];
 
-  const handleGenerate = useCallback(async (idea: string) => {
-    setIsLoading(true);
-    setError(null);
-    setBlueprint(null);
+const HOW_IT_WORKS_PROVIDER = [
+  { step: "01", title: "Build your profile", body: "Set your service category, experience, price range, and what events you love working." },
+  { step: "02", title: "Browse open events", body: "See event briefs from organizers who need exactly what you offer." },
+  { step: "03", title: "Submit a quote", body: "Write a personalised proposal with your price and availability." },
+  { step: "04", title: "Grow your portfolio", body: "Build lineage and community trust through every event you work." },
+];
 
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "blueprint", eventIdea: idea }),
-      });
+const STATS = [
+  { value: "60s", label: "From idea to brief" },
+  { value: "2-sided", label: "Organizers + Providers" },
+  { value: "AI-first", label: "Not just a marketplace" },
+  { value: "Community", label: "Built for the scene" },
+];
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error ?? "Something went wrong");
-      }
-
-      const data = await res.json();
-      setBlueprint(data.blueprint);
-
-      // Scroll to results smoothly
-      setTimeout(() => {
-        document
-          .getElementById("blueprint-section")
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100);
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "Failed to generate blueprint."
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
+export default function LandingPage() {
   return (
-    <main className="min-h-screen" style={{ background: "linear-gradient(135deg, #0D0D1A 0%, #100D2E 50%, #0D1520 100%)" }}>
+    <div className="min-h-screen bg-surface">
+      <Navbar />
+
       {/* Hero */}
-      <HeroSection />
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-24 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-surface-border bg-surface-raised text-ink-muted text-xs font-medium mb-8">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent-green" />
+          Built for underground and community events
+        </div>
 
-      {/* Input */}
-      <EventInputForm onGenerate={handleGenerate} isLoading={isLoading} />
+        <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-ink tracking-tight leading-[1.05] mb-6">
+          From messy idea<br />
+          <span className="text-ink-muted">to vendor-ready plan.</span>
+        </h1>
 
-      {/* Error */}
-      {error && (
-        <div className="px-4 max-w-4xl mx-auto mb-6">
-          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-3">
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <p className="text-lg text-ink-muted max-w-2xl mx-auto mb-10 leading-relaxed">
+          EventOps AI is the intelligence layer before the marketplace. Describe your event,
+          get a smart checklist, match with providers, and co-create the experience — in 60 seconds.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16">
+          <Link href="/organizer" className="btn btn-primary btn-lg w-full sm:w-auto">
+            Plan my event
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
-            {error}
-          </div>
+          </Link>
+          <Link href="/provider" className="btn btn-secondary btn-lg w-full sm:w-auto">
+            Join as a provider
+          </Link>
+          <Link href="/events" className="btn btn-ghost btn-lg w-full sm:w-auto text-ink-muted">
+            Browse open events →
+          </Link>
         </div>
-      )}
 
-      {/* Loading state */}
-      {isLoading && (
-        <div className="px-4 max-w-4xl mx-auto mb-6">
-          <div className="glass-card p-8 flex flex-col items-center gap-4">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full border-2 border-violet-500/20 border-t-violet-500 animate-spin" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-2xl">⚡</span>
-              </div>
+        {/* Stats bar */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+          {STATS.map((s) => (
+            <div key={s.label} className="card p-4 text-center">
+              <div className="text-2xl font-extrabold text-ink mb-1">{s.value}</div>
+              <div className="text-xs text-ink-faint font-medium">{s.label}</div>
             </div>
-            <div className="text-center">
-              <p className="text-white font-semibold mb-1">Building your event blueprint...</p>
-              <p className="text-slate-400 text-sm">AI is structuring your event idea</p>
-            </div>
-            <div className="w-full max-w-xs space-y-2">
-              {[80, 60, 70].map((w, i) => (
-                <div key={i} className="h-2 rounded shimmer" style={{ width: `${w}%` }} />
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
-      )}
+      </section>
 
-      {/* Results */}
-      {blueprint && (
-        <div id="blueprint-section">
-          {/* Blueprint */}
-          <BlueprintCard blueprint={blueprint} />
+      <div className="divider" />
 
-          {/* Event Stack */}
-          <CategoryCard categories={serviceCategories} />
-
-          {/* Risks */}
-          <RiskNotes risks={blueprint.risks} />
-
-          {/* Vendors */}
-          <section className="px-4 py-6 max-w-4xl mx-auto animate-fade-in-up">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-pink-500/30 to-transparent" />
-              <div className="flex items-center gap-2 text-pink-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span className="text-sm font-semibold uppercase tracking-wider">Matched Service Providers</span>
-              </div>
-              <div className="h-px flex-1 bg-gradient-to-r from-pink-500/30 via-pink-500/30 to-transparent" />
+      {/* Two-sided value props */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Organizer */}
+          <div className="card p-8">
+            <div className="w-10 h-10 rounded-xl bg-ink flex items-center justify-center mb-5">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
             </div>
-
-            <p className="text-slate-400 text-sm mb-6">
-              {mockVendors.length} vendors matched based on your event type, location, and vibe. Click any vendor to generate a personalised outreach message.
+            <h2 className="text-xl font-bold text-ink mb-2">For organizers</h2>
+            <p className="text-ink-muted text-sm mb-6 leading-relaxed">
+              Stop guessing what you need. AI turns your rough event idea into a structured brief, budget breakdown, and matched provider shortlist.
             </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {mockVendors.map((vendor) => (
-                <VendorCard key={vendor.id} vendor={vendor} blueprint={blueprint} />
+            <div className="space-y-4 mb-6">
+              {HOW_IT_WORKS_ORGANIZER.map((item) => (
+                <div key={item.step} className="flex gap-4">
+                  <span className="text-xs font-bold text-ink-faint mt-0.5 w-5 flex-shrink-0">{item.step}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-ink">{item.title}</p>
+                    <p className="text-xs text-ink-muted mt-0.5 leading-relaxed">{item.body}</p>
+                  </div>
+                </div>
               ))}
             </div>
-          </section>
+            <Link href="/organizer" className="btn btn-primary w-full justify-center">
+              Start planning
+            </Link>
+          </div>
 
-          {/* Footer CTA */}
-          <section className="px-4 py-16 max-w-4xl mx-auto text-center">
-            <div className="glass-card p-8 md:p-12">
-              <p className="text-xs text-violet-400 font-semibold uppercase tracking-widest mb-4">EventOps AI</p>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                From chaos to clarity in 60 seconds.
-              </h2>
-              <p className="text-slate-400 text-sm md:text-base max-w-lg mx-auto">
-                EventOps AI is the intelligence layer before the marketplace — turning your rough idea into a vendor-ready brief.
-              </p>
+          {/* Provider */}
+          <div className="card p-8">
+            <div className="w-10 h-10 rounded-xl bg-ink flex items-center justify-center mb-5">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
             </div>
-          </section>
+            <h2 className="text-xl font-bold text-ink mb-2">For providers</h2>
+            <p className="text-ink-muted text-sm mb-6 leading-relaxed">
+              You're already being matched to events. Claim your profile, browse events that fit your specialty, and submit quotes directly.
+            </p>
+            <div className="space-y-4 mb-6">
+              {HOW_IT_WORKS_PROVIDER.map((item) => (
+                <div key={item.step} className="flex gap-4">
+                  <span className="text-xs font-bold text-ink-faint mt-0.5 w-5 flex-shrink-0">{item.step}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-ink">{item.title}</p>
+                    <p className="text-xs text-ink-muted mt-0.5 leading-relaxed">{item.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Link href="/provider" className="btn btn-primary w-full justify-center">
+              Build my profile
+            </Link>
+          </div>
         </div>
-      )}
-    </main>
+      </section>
+
+      <div className="divider" />
+
+      {/* Positioning statement */}
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 py-20 text-center">
+        <p className="section-label mb-4">Our positioning</p>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-ink mb-6 leading-tight">
+          We're not building another marketplace.<br />
+          <span className="text-ink-muted">We're building the missing intelligence layer.</span>
+        </h2>
+        <p className="text-ink-muted leading-relaxed max-w-xl mx-auto mb-8">
+          The hard part isn't finding vendors. It's turning a chaotic event idea into a clear operational brief that vendors can actually respond to. That's what EventOps AI does — and no one else does it for the underground and community scene.
+        </p>
+        <div className="flex flex-wrap justify-center gap-2">
+          {["Underground music", "Community festivals", "Art events", "Pop-up markets", "Corporate offsites", "Warehouse parties"].map((tag) => (
+            <span key={tag} className="badge badge-default">{tag}</span>
+          ))}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-surface-border bg-surface-raised">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-ink flex items-center justify-center">
+              <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <span className="text-sm font-semibold text-ink">EventOps AI</span>
+          </div>
+          <p className="text-xs text-ink-faint text-center">
+            Built for the underground and community scene · Hackathon 2026
+          </p>
+          <div className="flex gap-4 text-xs text-ink-muted">
+            <Link href="/organizer" className="hover:text-ink transition-colors">Plan Event</Link>
+            <Link href="/provider" className="hover:text-ink transition-colors">Providers</Link>
+            <Link href="/events" className="hover:text-ink transition-colors">Events</Link>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
