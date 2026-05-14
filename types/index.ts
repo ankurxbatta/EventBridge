@@ -142,3 +142,11 @@ export const SERVICE_CATEGORIES = [
 ] as const;
 
 export type ServiceCategory = typeof SERVICE_CATEGORIES[number];
+
+export type ServicePriority = "Must-have" | "Important" | "Optional";
+
+export interface ServiceCategoryItem {
+  name: ServiceCategory;
+  priority: ServicePriority;
+  reason: string;
+}

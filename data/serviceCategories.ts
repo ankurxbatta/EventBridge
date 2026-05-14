@@ -1,6 +1,6 @@
-import { ServiceCategory } from "@/types";
+import { ServiceCategoryItem } from "@/types";
 
-export const serviceCategories: ServiceCategory[] = [
+export const serviceCategories: ServiceCategoryItem[] = [
   {
     name: "Venue",
     priority: "Must-have",

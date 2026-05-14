@@ -1,15 +1,15 @@
 "use client";
 
-import { ServiceCategory } from "@/types";
+import { ServiceCategoryItem, ServicePriority } from "@/types";
 
 interface Props {
-  categories: ServiceCategory[];
+  categories: ServiceCategoryItem[];
 }
 
-const priorityConfig = {
+const priorityConfig: Record<ServicePriority, { badge: string; dot: string; order: number }> = {
   "Must-have": { badge: "badge-must-have", dot: "bg-red-400", order: 0 },
-  "Important": { badge: "badge-important", dot: "bg-yellow-400", order: 1 },
-  "Optional": { badge: "badge-optional", dot: "bg-green-400", order: 2 },
+  Important: { badge: "badge-important", dot: "bg-yellow-400", order: 1 },
+  Optional: { badge: "badge-optional", dot: "bg-green-400", order: 2 },
 };
 
 const categoryIcons: Record<string, string> = {
