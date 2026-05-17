@@ -633,6 +633,6 @@ export default function OrganizerPage() {
 // Helper to clear session without importing from store directly in JSX
 function clearOrganizerSessionClient() {
   if (typeof window !== "undefined") {
-    localStorage.removeItem("eventops_organizer_session");
+    localStorage.removeItem("eventbridge_organizer_session");
   }
 }

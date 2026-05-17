@@ -28,7 +28,7 @@ export default function HeroSection() {
 
         {/* Title */}
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-none">
-          <span className="gradient-text">EventOps AI</span>
+          <span className="gradient-text">EventBridge</span>
         </h1>
 
         {/* Tagline */}
@@ -40,7 +40,7 @@ export default function HeroSection() {
 
         {/* Description */}
         <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-12 leading-relaxed">
-          Describe your event in plain language. EventOps AI generates a
+          Describe your event in plain language. EventBridge generates a
           structured blueprint, identifies required services, highlights
           operational risks, matches vendors, and writes your outreach messages.
         </p>

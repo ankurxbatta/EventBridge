@@ -136,7 +136,7 @@ export default function ProviderPage() {
               <span className="text-ink-muted">Claim your place.</span>
             </h1>
             <p className="text-ink-muted max-w-xl mx-auto text-sm leading-relaxed">
-              Organizers are using EventOps AI to find providers like you. Build your profile,
+              Organizers are using EventBridge to find providers like you. Build your profile,
               browse open events, and submit quotes — no cold pitching.
             </p>
           </div>

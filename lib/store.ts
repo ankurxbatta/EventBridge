@@ -5,10 +5,10 @@
 
 import { PostedEvent, ProviderProfile, Quote } from "@/types";
 
-const EVENTS_KEY = "eventops_events";
-const PROVIDERS_KEY = "eventops_providers";
-const ORGANIZER_SESSION_KEY = "eventops_organizer_session";
-const PROVIDER_SESSION_KEY = "eventops_provider_session";
+const EVENTS_KEY = "eventbridge_events";
+const PROVIDERS_KEY = "eventbridge_providers";
+const ORGANIZER_SESSION_KEY = "eventbridge_organizer_session";
+const PROVIDER_SESSION_KEY = "eventbridge_provider_session";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

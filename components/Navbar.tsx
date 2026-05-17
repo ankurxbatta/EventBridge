@@ -63,7 +63,7 @@ export default function Navbar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <span className="font-bold text-ink text-sm tracking-tight">EventOps AI</span>
+          <span className="font-bold text-ink text-sm tracking-tight">EventBridge</span>
         </Link>
 
         {/* Desktop nav */}

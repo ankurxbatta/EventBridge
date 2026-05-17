@@ -42,7 +42,7 @@ export default function LandingPage() {
         </h1>
 
         <p className="text-lg text-ink-muted max-w-2xl mx-auto mb-10 leading-relaxed">
-          EventOps AI is the intelligence layer before the marketplace. Describe your event,
+          EventBridge is the intelligence layer before the marketplace. Describe your event,
           get a smart checklist, match with providers, and co-create the experience — in 60 seconds.
         </p>
 
@@ -143,7 +143,7 @@ export default function LandingPage() {
           <span className="text-ink-muted">We're building the missing intelligence layer.</span>
         </h2>
         <p className="text-ink-muted leading-relaxed max-w-xl mx-auto mb-8">
-          The hard part isn't finding vendors. It's turning a chaotic event idea into a clear operational brief that vendors can actually respond to. That's what EventOps AI does — and no one else does it for the underground and community scene.
+          The hard part isn't finding vendors. It's turning a chaotic event idea into a clear operational brief that vendors can actually respond to. That's what EventBridge does — and no one else does it for the underground and community scene.
         </p>
         <div className="flex flex-wrap justify-center gap-2">
           {["Underground music", "Community festivals", "Art events", "Pop-up markets", "Corporate offsites", "Warehouse parties"].map((tag) => (
@@ -161,7 +161,7 @@ export default function LandingPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <span className="text-sm font-semibold text-ink">EventOps AI</span>
+            <span className="text-sm font-semibold text-ink">EventBridge</span>
           </div>
           <p className="text-xs text-ink-faint text-center">
             Built for the underground and community scene · Hackathon 2026

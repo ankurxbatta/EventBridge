@@ -1,4 +1,4 @@
-# Product Requirements Document — EventOps AI
+# Product Requirements Document — EventBridge
 
 ## Problem
 
@@ -6,7 +6,7 @@ Organizing live events starts with chaos. Organizers typically have a rough idea
 
 ## Solution
 
-EventOps AI creates an instant event operations brief from a plain-language event description. It structures the idea, identifies required services, surfaces operational risks, matches relevant vendors, and generates personalized outreach messages.
+EventBridge creates an instant event operations brief from a plain-language event description. It structures the idea, identifies required services, surfaces operational risks, matches relevant vendors, and generates personalized outreach messages.
 
 ## Target Users
 

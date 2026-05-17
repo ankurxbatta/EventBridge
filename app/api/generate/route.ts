@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+async function geminiGenerate(prompt: string, maxTokens = 1024, temperature = 0.7) {
+  if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not set");
+  const url = `https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generate?key=${GEMINI_API_KEY}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      prompt: { text: prompt },
+      temperature,
+      maxOutputTokens: maxTokens,
+    }),
+  });
+  const data = await res.json();
+  return data?.candidates?.[0]?.output ?? "";
+}
 
 // ── Prompts ────────────────────────────────────────────────────────────────────
 
-const BLUEPRINT_PROMPT = `You are EventOps AI, an expert event operations planner.
+const BLUEPRINT_PROMPT = `You are EventBridge, an expert event operations planner.
 Given a rough event idea, return ONLY a valid JSON object — no text outside it.
 
 {
@@ -24,7 +39,7 @@ Given a rough event idea, return ONLY a valid JSON object — no text outside it
 requiredServices MUST only use: Venue, Sound, Lighting, Visuals, Food, Security, Marketing, Artists / Performers
 risks must be specific to event type, scale, and location.`;
 
-const CHECKLIST_PROMPT = `You are EventOps AI. Given an event brief, generate a service checklist.
+const CHECKLIST_PROMPT = `You are EventBridge. Given an event brief, generate a service checklist.
 Return ONLY a valid JSON object with a "checklist" array — no text outside it.
 
 {
@@ -43,19 +58,19 @@ Return ONLY a valid JSON object with a "checklist" array — no text outside it.
 Allowed services: Venue, Sound, Lighting, Visuals, Food, Security, Marketing, Artists / Performers
 Order by priority: must-have first. Be specific to the event type and scale.`;
 
-const OUTREACH_PROMPT = `You are EventOps AI. Write a short warm vendor outreach message.
+const OUTREACH_PROMPT = `You are EventBridge. Write a short warm vendor outreach message.
 Under 120 words. Specific to the event and vendor. Human, not robotic.
 No subject line. Start with "Hi [Vendor Name]," end with a clear call to action.`;
 
 const CHAT_PROMPT = (bp: Record<string, unknown>) =>
-  `You are EventOps AI, a smart event operations assistant. You know this event in full detail:
+  `You are EventBridge, a smart event operations assistant. You know this event in full detail:
 Event: ${bp.eventName} | Type: ${bp.eventType} | Location: ${bp.location} | Size: ${bp.audienceSize} | Budget: ${bp.estimatedBudget} | Vibe: ${bp.vibe}
 Services needed: ${(bp.requiredServices as string[])?.join(", ")}
 Risks: ${(bp.risks as string[])?.join(" | ")}
 
 Answer questions specifically, practically, concisely (2-4 sentences). Reference actual numbers when asked about budget.`;
 
-const QUOTE_REVIEW_PROMPT = `You are EventOps AI. Given an event brief and a provider quote, write a 2-sentence assessment of how well this provider fits the event. Be specific and honest. Start with the fit quality.`;
+const QUOTE_REVIEW_PROMPT = `You are EventBridge. Given an event brief and a provider quote, write a 2-sentence assessment of how well this provider fits the event. Be specific and honest. Start with the fit quality.`;
 
 // ── Handler ────────────────────────────────────────────────────────────────────
 
@@ -69,17 +84,9 @@ export async function POST(req: NextRequest) {
       const { eventIdea } = body;
       if (!eventIdea) return NextResponse.json({ error: "eventIdea required" }, { status: 400 });
 
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: BLUEPRINT_PROMPT },
-          { role: "user", content: `Event idea: ${eventIdea}` },
-        ],
-        temperature: 0.7,
-        max_tokens: 900,
-        response_format: { type: "json_object" },
-      });
-      const parsed = JSON.parse(completion.choices[0]?.message?.content ?? "{}");
+      const prompt = `${BLUEPRINT_PROMPT}\nEvent idea: ${eventIdea}`;
+      const output = await geminiGenerate(prompt, 900, 0.7);
+      const parsed = JSON.parse(output ?? "{}");
       return NextResponse.json({ blueprint: parsed });
     }
 
@@ -90,18 +97,7 @@ export async function POST(req: NextRequest) {
 
       const prompt = `Event: ${blueprint.eventName}, ${blueprint.eventType}, ${blueprint.location}, ${blueprint.audienceSize}, budget ${blueprint.estimatedBudget}, vibe: ${blueprint.vibe}. Summary: ${blueprint.summary}`;
 
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: CHECKLIST_PROMPT },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.5,
-        max_tokens: 800,
-        response_format: { type: "json_object" },
-      });
-
-      const raw = completion.choices[0]?.message?.content ?? "{}";
+      const raw = await geminiGenerate(`${CHECKLIST_PROMPT}\n${prompt}`, 800, 0.5);
       const parsed = JSON.parse(raw);
       const checklist = Array.isArray(parsed.checklist)
         ? parsed.checklist
@@ -120,16 +116,8 @@ export async function POST(req: NextRequest) {
 
       const prompt = `Event: ${blueprint.eventName} (${blueprint.eventType}), ${blueprint.location}, ${blueprint.audienceSize}, budget ${blueprint.estimatedBudget}, vibe: ${blueprint.vibe}. Vendor: ${vendor.name} (${vendor.category}), ${vendor.priceRange}. Why matched: ${vendor.whyMatched}`;
 
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: OUTREACH_PROMPT },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.8,
-        max_tokens: 300,
-      });
-      return NextResponse.json({ message: completion.choices[0]?.message?.content ?? "" });
+      const message = await geminiGenerate(`${OUTREACH_PROMPT}\n${prompt}`, 300, 0.8);
+      return NextResponse.json({ message: message ?? "" });
     }
 
     // Chat
@@ -137,16 +125,9 @@ export async function POST(req: NextRequest) {
       const { blueprint, messages } = body;
       if (!blueprint || !messages) return NextResponse.json({ error: "blueprint and messages required" }, { status: 400 });
 
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: CHAT_PROMPT(blueprint) },
-          ...messages.map((m: { role: string; content: string }) => ({ role: m.role as "user" | "assistant", content: m.content })),
-        ],
-        temperature: 0.7,
-        max_tokens: 300,
-      });
-      return NextResponse.json({ reply: completion.choices[0]?.message?.content ?? "" });
+      const convo = [CHAT_PROMPT(blueprint), ...messages.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`)].join("\n\n");
+      const reply = await geminiGenerate(convo, 300, 0.7);
+      return NextResponse.json({ reply: reply ?? "" });
     }
 
     // Quote review
@@ -156,16 +137,8 @@ export async function POST(req: NextRequest) {
 
       const prompt = `Event: ${blueprint.eventName}, ${blueprint.eventType}, ${blueprint.audienceSize}, vibe: ${blueprint.vibe}. Quote from ${quote.providerName} (${quote.providerCategory}): "${quote.message}". Price: ${quote.price}. Experience: ${quote.experience}.`;
 
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: QUOTE_REVIEW_PROMPT },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.6,
-        max_tokens: 120,
-      });
-      return NextResponse.json({ review: completion.choices[0]?.message?.content ?? "" });
+      const review = await geminiGenerate(`${QUOTE_REVIEW_PROMPT}\n${prompt}`, 120, 0.6);
+      return NextResponse.json({ review: review ?? "" });
     }
 
     return NextResponse.json({ error: "Invalid type" }, { status: 400 });

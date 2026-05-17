@@ -122,7 +122,7 @@ export default function EventDetailPage() {
   }, [id, router, searchParams]);
 
   useEffect(() => {
-    const handle = (e: StorageEvent) => { if (e.key === "eventops_events") loadEvent(); };
+    const handle = (e: StorageEvent) => { if (e.key === "eventbridge_events") loadEvent(); };
     window.addEventListener("storage", handle);
     return () => window.removeEventListener("storage", handle);
   }, [loadEvent]);

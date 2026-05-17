@@ -1,8 +1,8 @@
-# EventOps AI
+# EventBridge
 
 > From messy event idea to vendor-ready plan in 60 seconds.
 
-EventOps AI helps live event organizers turn a rough event idea into a structured event blueprint, matched service providers, and ready-to-send outreach messages — powered by GPT-4o.
+EventBridge helps live event organizers turn a rough event idea into a structured event blueprint, matched service providers, and ready-to-send outreach messages — powered by GPT-4o.
 
 ---
 

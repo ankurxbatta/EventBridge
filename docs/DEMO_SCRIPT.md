@@ -1,10 +1,10 @@
-# 1-Minute Demo Script — EventOps AI
+# 1-Minute Demo Script — EventBridge
 
 ---
 
 **[0:00 — 0:10] Hook**
 
-"Organizing a live event usually starts with chaos — vague ideas, scattered vendor contacts, group chats, and unclear responsibilities. This is EventOps AI."
+"Organizing a live event usually starts with chaos — vague ideas, scattered vendor contacts, group chats, and unclear responsibilities. This is EventBridge."
 
 ---
 
@@ -34,7 +34,7 @@
 
 **[0:55 — 1:00] Closer**
 
-"So instead of spending hours turning an idea into an execution plan, organizers go from idea to vendor-ready brief in under 60 seconds. That's EventOps AI."
+"So instead of spending hours turning an idea into an execution plan, organizers go from idea to vendor-ready brief in under 60 seconds. That's EventBridge."
 
 ---
 

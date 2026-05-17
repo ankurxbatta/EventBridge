@@ -1,8 +1,8 @@
-# Architecture — EventOps AI
+# Architecture — EventBridge
 
 ## Overview
 
-EventOps AI is a single-page Next.js application with a thin API layer. The frontend handles all state and UI. The backend consists of a single serverless route that proxies requests to OpenAI.
+EventBridge is a single-page Next.js application with a thin API layer. The frontend handles all state and UI. The backend consists of a single serverless route that proxies requests to OpenAI.
 
 ---
 

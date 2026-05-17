@@ -1,4 +1,4 @@
-# Contributing — EventOps AI
+# Contributing — EventBridge
 
 ## Prerequisites
 
