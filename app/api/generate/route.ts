@@ -17,6 +17,7 @@ async function geminiGenerate(prompt: string, maxTokens = 1024, temperature = 0.
   const data = await res.json();
   return data?.candidates?.[0]?.output ?? "";
 }
+// Testing the Gemini API connection
 
 // ── Prompts ────────────────────────────────────────────────────────────────────
 
